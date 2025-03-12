@@ -2,7 +2,7 @@
 .idea/
 plot_res/
 data/*
-devkit/*
+# devkit/*
 models/*
 !data/README.md
 !devkit/README.md
@@ -65,7 +65,7 @@ coverage.xml
 *.pot
 
 # Django stuff:
-*.log
+# *.log
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
