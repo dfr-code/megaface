@@ -1,62 +1,74 @@
-# megaface-evaluation.pytorch
+这个项目进行部分修改，源码可以到https://github.com/NotMorven/megaface-evaluation.pytorch中获取。
 
-<p align="center">
-    <img alt="framework" src="https://img.shields.io/badge/framework-pytorch-ff69b4">
-    <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/NotMorven/megaface-evaluation.pytorch">
-    <img alt="GitHub" src="https://img.shields.io/github/license/NotMorven/megaface-evaluation.pytorch">
-    <img alt="GitHub repo size" src="https://img.shields.io/github/repo-size/NotMorven/megaface-evaluation.pytorch">
-</p>
+修改部分主要是为了匹配config和简单运行，如今版本只需要修改config即可测试不同模型。
 
+发的压缩包中包含了所有代码，数据集需要自行下载，存放位置放在和IJB同样的位置，Data\test中。
 
-This Repository is adapted from [deepinx/megaface-evaluation](https://github.com/deepinx/megaface-evaluation), used for the evaluation of Pytorch model. 
+首先需要说明，megaface的运行逻辑是
 
-## MegaFace Evaluation Tool for Pytorch Models
+​	1、读取模型和模型参数来生成特征，
 
-MegaFace is a set of public face datasets published and maintained by the University of Washington's Computer Science and Engineering Laboratory. It is a benchmark of 1 million-scale facial recognition algorithm. The dataset contains 690,572 images with 1,027,060 images. This repository contains a simple tool to evaluate your models on Megaface Challenge 1 benchmark. All the codes are implemented in Python and Mxnet in this repo.
+​	2、用生成的特征来进行测试。
 
+### 生成特征
 
-## Environment
+运行步骤按照代码中的runwin.bat进行：
 
-This repository has been tested under the following environment:
+**首先运行 python gen_megaface.py**
 
--   Python 2.7
--   Ubuntu 16.04
--   Pytorch-1.1.0
--   OpenCV 2.4.9
+**然后运行 python remove_noises.py**
 
-## Usage
+前者是生成原始特征，后者是ArcFace专门进行清洗所写的代码。
 
-1.  Prepare the environment. OpenCV 2.4 is required by the official devkit, for convenience, you can download it from [BaiduCloud](https://pan.baidu.com/s/1By4yIds0hEnw6_Ihh75R5w) or [GoogleDrive](https://drive.google.com/open?id=1Ifjj6zJQaXzuggr0tVcaMe21F7hd1PZk) and unzip to ``/usr/local/lib/opencv2.4``.
+### 测试
 
-2.  Clone the repository and put your models to be evaluated in ``models/``.
+需要进入linux环境，建议采用虚拟机，启用共享文件夹选择代码所在的文件夹即可，这样方便些。
 
-3.  Download megaface testpack data from [BaiduCloud](https://pan.baidu.com/s/1kUXItYfHowpczk-80FLoGg) and unzip it to ``data/``.
+然后按照readme中按照opencv2.4（必须是2.4.x,因为megaface的程序强制要求）
 
-4.  Download megaface official devkit from [BaiduCloud](https://pan.baidu.com/s/1M7KF8IrcWCmzRprtahszcA) or [GoogleDrive](https://drive.google.com/open?id=1ESr2PzPg5c2trzlkr_ZqtKeaRkmvjeNi) and unzip to ``devkit/``.
-
-5.  Edit and call ``run.sh`` to evaluate your face recognition model performance.
-
-6.  Edit and run ``plot_result.py`` if you want to visualize the final results.
+**然后运行bash run.sh**
 
 
-## License
 
-MIT LICENSE
+## 修改配置
 
+### config修改
 
-## Reference
+可以参考configs中的megaface进行修改。
 
-```
-@inproceedings{kemelmacher2016megaface,
-title={The megaface benchmark: 1 million faces for recognition at scale},
-author={Kemelmacher-Shlizerman, Ira and Seitz, Steven M and Miller, Daniel and Brossard, Evan},
-booktitle={Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition},
-pages={4873--4882},
-year={2016}
-}
-```
+其中，output同样是输出生成特征的位置，也是测试时读取特征的位置。
 
+out_root是输出测试结果的位置。
 
-## Acknowledgment
+### devkit/experiments/run_experiment.py修改
 
-The code is adapted based on an intial fork from the [insightface](https://github.com/deepinsight/insightface) repository.
+44行，默认参数设置，sizes代表distractors个数，大部分问题中均设置成1M，也就是1000000，已经在run.sh中默认是1000000.probe_list是一个读取列表，这里可能会有相对路径出错的问题，可以自行设置成绝对路径试一试（直接修改默认值就行了，不用在命令行里单独写，那样也可能出问题）
+
+### 命令行修改
+
+主要是改config路径，用--config就行
+
+## 一些tip
+
+#### 为什么要分win和linux？
+
+单纯为了方便，正常大家python环境都设置在win下的，生成特征这种重任务咋win下合适些，不用到虚拟机中还下载torch去配置它，不过还是要为了测试下载一些专门的包的。
+
+除非本来就是用linux就可以无视一切，只用linux。
+
+#### 会不会一次就跑成功？
+
+不知道，那两个megaface提供的exe程序不好搞，可能存在bash和sh的问题，可能存在路径绝对路径或者相对路径的问题，可能python版本问题（我是2.7），可能opencv安装版本不对，版本对了但安装不正确（我是源码安装的），可能安装了没启动opencv等等问题。
+
+最有可能发生的就是，前面跑通了，最后却没有生成cmc和match两个join文件，那恭喜你，就差一步了，那就是反复跑，直到跑出来为止，因为没有生成意味着程序莫名中止了，可能是内存爆了什么的原因。
+
+当然反复跑也有讲究的，我写了个run_experimentc和runc，它们和run_experiment和run没多大区别，就是把没跑通的部分反复跑。
+
+然后就是建议在终端界面跑，在code的终端更容易跑失败。
+
+如果终端跑也失败了，可以关掉终端再打开再跑。
+
+如果还不行，那整个虚拟机重启。
+
+这些问题是我主要遇到的，可能还有其他问题会出现。不过可能是我做法有问题，如果有更好的操作方法可以补充，然后我加以改进。
+
