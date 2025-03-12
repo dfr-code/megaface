@@ -1,5 +1,7 @@
 这个项目进行部分修改，源码可以到https://github.com/NotMorven/megaface-evaluation.pytorch中获取。
 
+其中github源码部分删除部分megaface源码，需要按上述路径获取
+
 修改部分主要是为了匹配config和简单运行，如今版本只需要修改config即可测试不同模型。
 
 发的压缩包中包含了所有代码，数据集需要自行下载，存放位置放在和IJB同样的位置，Data\test中。
